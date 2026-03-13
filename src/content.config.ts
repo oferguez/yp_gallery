@@ -10,6 +10,7 @@ const paintingsCollection = defineCollection({
     medium: z.string(),
     dimensions: z.string(),
     series: z.string(),
+    room: z.string(),
     description: z.string(),
     featured: z.boolean().default(false),
     order: z.number(),

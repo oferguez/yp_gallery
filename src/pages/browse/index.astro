@@ -1,0 +1,190 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { rooms, siteConfig } from '../../config/site';
+import { unsplashSrc } from '../../lib/images';
+
+const paintings = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
+
+const rawPoints: Record<string, { x: number; y: number }> = {
+  foyer: { x: 18, y: 18 },
+  'north-light': { x: 48, y: 10 },
+  'paper-archive': { x: 10, y: 58 },
+  'mineral-room': { x: 46, y: 48 },
+  'river-gallery': { x: 72, y: 44 },
+  'ember-wing': { x: 58, y: 78 }
+};
+
+const xValues = Object.values(rawPoints).map((point) => point.x);
+const yValues = Object.values(rawPoints).map((point) => point.y);
+
+const minX = Math.min(...xValues);
+const maxX = Math.max(...xValues);
+const minY = Math.min(...yValues);
+const maxY = Math.max(...yValues);
+
+const normalize = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) => {
+  if (fromMax === fromMin) return (toMin + toMax) / 2;
+  const ratio = (value - fromMin) / (fromMax - fromMin);
+  return toMin + ratio * (toMax - toMin);
+};
+
+const mapPoints = Object.fromEntries(
+  Object.entries(rawPoints).map(([id, point]) => [
+    id,
+    {
+      x: normalize(point.x, minX, maxX, 22, 78),
+      y: normalize(point.y, minY, maxY, 16, 82)
+    }
+  ])
+) as Record<string, { x: number; y: number }>;
+
+const roomCards = rooms.map((room) => {
+  const firstPainting = paintings.find((painting) => painting.data.room === room.id);
+  return {
+    room,
+    coverImage: firstPainting ? unsplashSrc(firstPainting.data.coverImage, 1200) : ''
+  };
+});
+
+const edgeSet = new Set<string>();
+for (const room of rooms) {
+  for (const target of room.connectedTo) {
+    const edgeId = [room.id, target].sort().join('::');
+    edgeSet.add(edgeId);
+  }
+}
+
+const edges = [...edgeSet].map((edge) => {
+  const [a, b] = edge.split('::');
+  return {
+    fromId: a,
+    toId: b,
+    from: mapPoints[a],
+    to: mapPoints[b]
+  };
+});
+---
+
+<BaseLayout title={`Browse Rooms | ${siteConfig.artistName}`}>
+  <section class="container-shell page-intro">
+    <p class="eyebrow">Browse</p>
+    <h1>Room map</h1>
+    <p class="max-copy">Choose a room to enter. Connected rooms are linked through the map network.</p>
+  </section>
+
+  <section class="container-shell section-spacing" aria-label="Room connectivity map">
+    <div class="room-graph">
+      <svg class="room-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        {edges.map((edge) => (
+          <line
+            x1={edge.from.x}
+            y1={edge.from.y}
+            x2={edge.to.x}
+            y2={edge.to.y}
+            data-from={edge.fromId}
+            data-to={edge.toId}
+          ></line>
+        ))}
+      </svg>
+
+      {roomCards.map(({ room, coverImage }) => (
+        <a
+          class="room-node"
+          href={`/browse/${room.id}/`}
+          data-room-id={room.id}
+          data-raw-x={rawPoints[room.id].x}
+          data-raw-y={rawPoints[room.id].y}
+          style={`left:${mapPoints[room.id].x}%; top:${mapPoints[room.id].y}%;`}
+        >
+          {coverImage && <img class="room-node-bg" src={coverImage} alt="" aria-hidden="true" loading="lazy" />}
+          <div class="room-node-copy">
+            <h2>{room.name}</h2>
+            <p>{room.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  type FitMode = 'compact' | 'balanced' | 'spacious';
+  type Point = { x: number; y: number };
+
+  const points = new Map<string, Point>();
+  const nodes = document.querySelectorAll<HTMLAnchorElement>('.room-node[data-room-id]');
+  const lines = document.querySelectorAll<SVGLineElement>('.room-lines line');
+
+  nodes.forEach((node) => {
+    const roomId = node.dataset.roomId;
+    const rawX = Number(node.dataset.rawX);
+    const rawY = Number(node.dataset.rawY);
+    if (!roomId || Number.isNaN(rawX) || Number.isNaN(rawY)) return;
+    points.set(roomId, { x: rawX, y: rawY });
+  });
+
+  const xValues = [...points.values()].map((point) => point.x);
+  const yValues = [...points.values()].map((point) => point.y);
+  const minX = Math.min(...xValues);
+  const maxX = Math.max(...xValues);
+  const minY = Math.min(...yValues);
+  const maxY = Math.max(...yValues);
+
+  const normalize = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) => {
+    if (fromMax === fromMin) return (toMin + toMax) / 2;
+    const ratio = (value - fromMin) / (fromMax - fromMin);
+    return toMin + ratio * (toMax - toMin);
+  };
+
+  const ranges: Record<FitMode, { xMin: number; xMax: number; yMin: number; yMax: number }> = {
+    compact: { xMin: 26, xMax: 74, yMin: 20, yMax: 80 },
+    balanced: { xMin: 22, xMax: 78, yMin: 16, yMax: 82 },
+    spacious: { xMin: 16, xMax: 84, yMin: 12, yMax: 86 }
+  };
+
+  const resolveAuto = (): FitMode => {
+    if (window.innerWidth >= 1500) return 'spacious';
+    if (window.innerWidth <= 1100) return 'compact';
+    return 'balanced';
+  };
+
+  const place = () => {
+    const range = ranges[resolveAuto()];
+    const positioned = new Map<string, Point>();
+
+    points.forEach((raw, id) => {
+      const x = normalize(raw.x, minX, maxX, range.xMin, range.xMax);
+      const y = normalize(raw.y, minY, maxY, range.yMin, range.yMax);
+      positioned.set(id, { x, y });
+    });
+
+    nodes.forEach((node) => {
+      const roomId = node.dataset.roomId;
+      if (!roomId) return;
+      const point = positioned.get(roomId);
+      if (!point) return;
+      node.style.left = `${point.x}%`;
+      node.style.top = `${point.y}%`;
+    });
+
+    lines.forEach((line) => {
+      const from = line.dataset.from;
+      const to = line.dataset.to;
+      if (!from || !to) return;
+      const fromPoint = positioned.get(from);
+      const toPoint = positioned.get(to);
+      if (!fromPoint || !toPoint) return;
+      line.setAttribute('x1', String(fromPoint.x));
+      line.setAttribute('y1', String(fromPoint.y));
+      line.setAttribute('x2', String(toPoint.x));
+      line.setAttribute('y2', String(toPoint.y));
+    });
+  };
+
+  window.addEventListener('resize', () => {
+    place();
+  });
+
+  place();
+</script>

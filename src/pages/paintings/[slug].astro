@@ -4,6 +4,7 @@ import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../config/site';
 import { unsplashSrc, unsplashSrcSet } from '../../lib/images';
+import { getConnectedRooms, getRoomById } from '../../lib/rooms';
 
 export const getStaticPaths = (async () => {
   const paintings = await getCollection('paintings');
@@ -19,6 +20,8 @@ const currentIndex = works.findIndex((item) => item.data.slug === painting.data.
 const prevWork = currentIndex > 0 ? works[currentIndex - 1] : null;
 const nextWork = currentIndex < works.length - 1 ? works[currentIndex + 1] : null;
 const { data } = painting;
+const room = getRoomById(data.room);
+const connectedRooms = room ? getConnectedRooms(room.id) : [];
 ---
 
 <BaseLayout title={`${data.title} | ${siteConfig.artistName}`} description={data.description}>
@@ -56,9 +59,29 @@ const { data } = painting;
           <dt>Series</dt>
           <dd>{data.series}</dd>
         </div>
+        <div>
+          <dt>Room</dt>
+          <dd>{room ? room.name : data.room}</dd>
+        </div>
       </dl>
       <p>{data.description}</p>
     </section>
+
+    {room && (
+      <section class="section-spacing" aria-label="Room navigation">
+        <div class="section-head">
+          <h2>Room navigation</h2>
+          <a class="text-link" href={`/browse/${room.id}/`}>Enter {room.name}</a>
+        </div>
+        <div class="room-links">
+          {connectedRooms.map((connected) => (
+            <a class="pill-link" href={`/browse/${connected.id}/`}>
+              {connected.name}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
     {data.galleryImages && data.galleryImages.length > 0 && (
       <section class="detail-grid" aria-label="Detail images">

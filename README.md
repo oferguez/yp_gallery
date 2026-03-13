@@ -25,9 +25,11 @@ npm run preview
 - Theme values and tokens: `src/styles/global.css`
 - Default active theme: `src/config/site.ts` (`defaultTheme`)
 - Theme switcher options: `src/config/site.ts` (`themeOptions`)
+- Rooms and connectivity map: `src/config/site.ts` (`rooms`)
 - Artist name + intro text + nav items: `src/config/site.ts`
 - Painting content entries: `src/content/paintings/*.md`
 - Homepage composition: `src/pages/index.astro`
+- Browse map + room pages: `src/pages/browse/`
 
 ## Content model
 
@@ -39,6 +41,7 @@ Each painting entry includes:
 - `medium`
 - `dimensions`
 - `series`
+- `room`
 - `description`
 - `featured`
 - `order`

@@ -2,11 +2,12 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PaintingCard from '../../components/PaintingCard.astro';
-import { siteConfig } from '../../config/site';
+import { rooms, siteConfig } from '../../config/site';
 
 const paintings = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
 const series = [...new Set(paintings.map((item) => item.data.series))].sort();
 const years = [...new Set(paintings.map((item) => item.data.year))].sort((a, b) => b - a);
+const roomOptions = rooms.map((room) => room.id);
 ---
 
 <BaseLayout title={`Paintings | ${siteConfig.artistName}`}>
@@ -32,11 +33,18 @@ const years = [...new Set(paintings.map((item) => item.data.year))].sort((a, b) 
           {years.map((entry) => <option value={String(entry)}>{entry}</option>)}
         </select>
       </label>
+      <label>
+        Room
+        <select id="room-filter" name="room">
+          <option value="all">All rooms</option>
+          {roomOptions.map((roomId) => <option value={roomId}>{rooms.find((room) => room.id === roomId)?.name}</option>)}
+        </select>
+      </label>
     </form>
 
     <div class="paintings-grid" id="paintings-grid">
       {paintings.map((painting) => (
-        <div data-series={painting.data.series} data-year={painting.data.year}>
+        <div data-series={painting.data.series} data-year={painting.data.year} data-room={painting.data.room}>
           <PaintingCard painting={painting} />
         </div>
       ))}
@@ -46,20 +54,24 @@ const years = [...new Set(paintings.map((item) => item.data.year))].sort((a, b) 
   <script>
     const seriesSelect = document.querySelector<HTMLSelectElement>('#series-filter');
     const yearSelect = document.querySelector<HTMLSelectElement>('#year-filter');
+    const roomSelect = document.querySelector<HTMLSelectElement>('#room-filter');
     const cards = document.querySelectorAll<HTMLElement>('#paintings-grid > div');
 
     const applyFilter = () => {
       const series = seriesSelect?.value ?? 'all';
       const year = yearSelect?.value ?? 'all';
+      const room = roomSelect?.value ?? 'all';
 
       cards.forEach((card) => {
         const seriesMatch = series === 'all' || card.dataset.series === series;
         const yearMatch = year === 'all' || card.dataset.year === year;
-        card.hidden = !(seriesMatch && yearMatch);
+        const roomMatch = room === 'all' || card.dataset.room === room;
+        card.hidden = !(seriesMatch && yearMatch && roomMatch);
       });
     };
 
     seriesSelect?.addEventListener('change', applyFilter);
     yearSelect?.addEventListener('change', applyFilter);
+    roomSelect?.addEventListener('change', applyFilter);
   </script>
 </BaseLayout>

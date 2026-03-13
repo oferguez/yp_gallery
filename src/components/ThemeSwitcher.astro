@@ -2,43 +2,33 @@
 import { themeOptions } from '../config/site';
 ---
 
-<div class="theme-switcher" aria-label="Theme selector">
-  {themeOptions.map((theme) => (
-    <button
-      type="button"
-      class="theme-chip"
-      data-theme-option={theme.name}
-      aria-label={`Switch to ${theme.label} theme`}
-    >
-      {theme.label}
-    </button>
-  ))}
-</div>
+<label class="theme-switcher" for="theme-select">
+  Theme
+  <select id="theme-select" aria-label="Select site theme">
+    {themeOptions.map((theme) => (
+      <option value={theme.name}>{theme.label}</option>
+    ))}
+  </select>
+</label>
 
 <script>
   const root = document.documentElement;
-  const chips = document.querySelectorAll<HTMLButtonElement>('[data-theme-option]');
+  const themeSelect = document.querySelector<HTMLSelectElement>('#theme-select');
   const savedTheme = localStorage.getItem('gallery-theme');
 
   if (savedTheme) {
     root.dataset.theme = savedTheme;
   }
 
-  const syncActive = () => {
-    chips.forEach((chip) => {
-      chip.dataset.active = String(chip.dataset.themeOption === root.dataset.theme);
-    });
-  };
+  if (themeSelect) {
+    if (root.dataset.theme) {
+      themeSelect.value = root.dataset.theme;
+    }
 
-  syncActive();
-
-  chips.forEach((chip) => {
-    chip.addEventListener('click', () => {
-      const theme = chip.dataset.themeOption;
-      if (!theme) return;
+    themeSelect.addEventListener('change', () => {
+      const theme = themeSelect.value;
       root.dataset.theme = theme;
       localStorage.setItem('gallery-theme', theme);
-      syncActive();
     });
-  });
+  }
 </script>

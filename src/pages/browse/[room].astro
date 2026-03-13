@@ -1,0 +1,58 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PaintingCard from '../../components/PaintingCard.astro';
+import { rooms, siteConfig } from '../../config/site';
+import { getConnectedRooms, getRoomById } from '../../lib/rooms';
+
+export const getStaticPaths = (() => {
+  return rooms.map((room) => ({ params: { room: room.id } }));
+}) satisfies GetStaticPaths;
+
+const { room: roomId } = Astro.params;
+const room = roomId ? getRoomById(roomId) : null;
+
+if (!room) {
+  throw new Error('Unknown room.');
+}
+
+const paintings = (await getCollection('paintings'))
+  .filter((painting) => painting.data.room === room.id)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const connectedRooms = getConnectedRooms(room.id);
+---
+
+<BaseLayout title={`${room.name} | Browse | ${siteConfig.artistName}`}>
+  <section class="container-shell room-page">
+    <p class="eyebrow">Browse Room</p>
+    <h1>{room.name}</h1>
+    <p class="max-copy">{room.description}</p>
+    <p class="muted">Suggested theme: {room.theme}</p>
+  </section>
+
+  <section class="container-shell section-spacing" aria-label="Connected rooms">
+    <div class="section-head">
+      <h2>Connected rooms</h2>
+      <a class="text-link" href="/browse">Back to map</a>
+    </div>
+    <div class="room-links">
+      {connectedRooms.map((connected) => (
+        <a class="pill-link" href={`/browse/${connected.id}/`}>
+          {connected.name}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="container-shell section-spacing" aria-labelledby="room-works-title">
+    <div class="section-head">
+      <h2 id="room-works-title">Works in this room</h2>
+      <a class="text-link" href="/paintings">View all paintings</a>
+    </div>
+    <div class="paintings-grid">
+      {paintings.map((painting) => <PaintingCard painting={painting} />)}
+    </div>
+  </section>
+</BaseLayout>
