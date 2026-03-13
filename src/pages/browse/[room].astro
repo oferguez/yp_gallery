@@ -5,6 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PaintingCard from '../../components/PaintingCard.astro';
 import { rooms, siteConfig } from '../../config/site';
 import { getConnectedRooms, getRoomById } from '../../lib/rooms';
+import { withBase } from '../../lib/urls';
 
 export const getStaticPaths = (() => {
   return rooms.map((room) => ({ params: { room: room.id } }));
@@ -35,11 +36,11 @@ const connectedRooms = getConnectedRooms(room.id);
   <section class="container-shell section-spacing" aria-label="Connected rooms">
     <div class="section-head">
       <h2>Connected rooms</h2>
-      <a class="text-link" href="/browse">Back to map</a>
+      <a class="text-link" href={withBase('/browse')}>Back to map</a>
     </div>
     <div class="room-links">
       {connectedRooms.map((connected) => (
-        <a class="pill-link" href={`/browse/${connected.id}/`}>
+        <a class="pill-link" href={withBase(`/browse/${connected.id}/`)}>
           {connected.name}
         </a>
       ))}
@@ -49,7 +50,7 @@ const connectedRooms = getConnectedRooms(room.id);
   <section class="container-shell section-spacing" aria-labelledby="room-works-title">
     <div class="section-head">
       <h2 id="room-works-title">Works in this room</h2>
-      <a class="text-link" href="/paintings">View all paintings</a>
+      <a class="text-link" href={withBase('/paintings')}>View all paintings</a>
     </div>
     <div class="paintings-grid">
       {paintings.map((painting) => <PaintingCard painting={painting} />)}

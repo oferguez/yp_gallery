@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PaintingCard from '../components/PaintingCard.astro';
 import { siteConfig } from '../config/site';
+import { withBase } from '../lib/urls';
 
 const paintings = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
 const featured = paintings.filter((painting) => painting.data.featured).slice(0, 4);
@@ -46,7 +47,7 @@ const featured = paintings.filter((painting) => painting.data.featured).slice(0,
   <section class="container-shell section-spacing" aria-labelledby="featured-title">
     <div class="section-head">
       <h2 id="featured-title">Featured works</h2>
-      <a href="/paintings" class="text-link">Browse full catalogue</a>
+      <a href={withBase('/paintings')} class="text-link">Browse full catalogue</a>
     </div>
     <div class="paintings-grid">
       {featured.map((painting) => <PaintingCard painting={painting} />)}

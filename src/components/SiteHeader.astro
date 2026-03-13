@@ -1,13 +1,14 @@
 ---
 import { siteConfig } from '../config/site';
 import ThemeSwitcher from './ThemeSwitcher.astro';
+import { stripBase, withBase } from '../lib/urls';
 
-const pathname = Astro.url.pathname;
+const pathname = stripBase(Astro.url.pathname);
 ---
 
 <header class="site-header">
   <div class="container-shell header-inner">
-    <a class="brand" href="/">
+    <a class="brand" href={withBase('/')}>
       <span class="brand-name">{siteConfig.artistName}</span>
       <span class="brand-tag">Painter</span>
     </a>
@@ -20,7 +21,7 @@ const pathname = Astro.url.pathname;
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <li>
-              <a class="nav-link" data-active={active} href={item.href}>
+              <a class="nav-link" data-active={active} href={withBase(item.href)}>
                 {item.label}
               </a>
             </li>

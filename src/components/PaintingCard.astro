@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { unsplashSrc, unsplashSrcSet } from '../lib/images';
 import { getRoomById } from '../lib/rooms';
+import { withBase } from '../lib/urls';
 
 interface Props {
   painting: CollectionEntry<'paintings'>;
@@ -13,7 +14,7 @@ const room = getRoomById(data.room);
 ---
 
 <article class="painting-card">
-  <a href={`/paintings/${data.slug}/`} class="painting-card-link">
+  <a href={withBase(`/paintings/${data.slug}/`)} class="painting-card-link">
     <div class="painting-card-image-wrap">
       <img
         class="painting-card-image"
