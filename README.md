@@ -75,3 +75,4 @@ This project is static by default (`output: "static"`), so Cloudflare Pages setu
 5. Environment: Node `22.x`
 
 No Astro adapter is required for static hosting.
+ 
