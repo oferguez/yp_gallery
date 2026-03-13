@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PaintingCard from '../../components/PaintingCard.astro';
+import { siteConfig } from '../../config/site';
+
+const paintings = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
+const series = [...new Set(paintings.map((item) => item.data.series))].sort();
+const years = [...new Set(paintings.map((item) => item.data.year))].sort((a, b) => b - a);
+---
+
+<BaseLayout title={`Paintings | ${siteConfig.artistName}`}>
+  <section class="container-shell page-intro">
+    <p class="eyebrow">Paintings</p>
+    <h1>Catalogue of works</h1>
+    <p class="max-copy">A selected archive of paintings across recent series.</p>
+  </section>
+
+  <section class="container-shell section-spacing" aria-label="Painting filters">
+    <form class="filters" id="painting-filters">
+      <label>
+        Series
+        <select id="series-filter" name="series">
+          <option value="all">All series</option>
+          {series.map((entry) => <option value={entry}>{entry}</option>)}
+        </select>
+      </label>
+      <label>
+        Year
+        <select id="year-filter" name="year">
+          <option value="all">All years</option>
+          {years.map((entry) => <option value={String(entry)}>{entry}</option>)}
+        </select>
+      </label>
+    </form>
+
+    <div class="paintings-grid" id="paintings-grid">
+      {paintings.map((painting) => (
+        <div data-series={painting.data.series} data-year={painting.data.year}>
+          <PaintingCard painting={painting} />
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <script>
+    const seriesSelect = document.querySelector<HTMLSelectElement>('#series-filter');
+    const yearSelect = document.querySelector<HTMLSelectElement>('#year-filter');
+    const cards = document.querySelectorAll<HTMLElement>('#paintings-grid > div');
+
+    const applyFilter = () => {
+      const series = seriesSelect?.value ?? 'all';
+      const year = yearSelect?.value ?? 'all';
+
+      cards.forEach((card) => {
+        const seriesMatch = series === 'all' || card.dataset.series === series;
+        const yearMatch = year === 'all' || card.dataset.year === year;
+        card.hidden = !(seriesMatch && yearMatch);
+      });
+    };
+
+    seriesSelect?.addEventListener('change', applyFilter);
+    yearSelect?.addEventListener('change', applyFilter);
+  </script>
+</BaseLayout>

@@ -1,0 +1,44 @@
+---
+import { themeOptions } from '../config/site';
+---
+
+<div class="theme-switcher" aria-label="Theme selector">
+  {themeOptions.map((theme) => (
+    <button
+      type="button"
+      class="theme-chip"
+      data-theme-option={theme.name}
+      aria-label={`Switch to ${theme.label} theme`}
+    >
+      {theme.label}
+    </button>
+  ))}
+</div>
+
+<script>
+  const root = document.documentElement;
+  const chips = document.querySelectorAll<HTMLButtonElement>('[data-theme-option]');
+  const savedTheme = localStorage.getItem('gallery-theme');
+
+  if (savedTheme) {
+    root.dataset.theme = savedTheme;
+  }
+
+  const syncActive = () => {
+    chips.forEach((chip) => {
+      chip.dataset.active = String(chip.dataset.themeOption === root.dataset.theme);
+    });
+  };
+
+  syncActive();
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const theme = chip.dataset.themeOption;
+      if (!theme) return;
+      root.dataset.theme = theme;
+      localStorage.setItem('gallery-theme', theme);
+      syncActive();
+    });
+  });
+</script>

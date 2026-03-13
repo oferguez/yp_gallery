@@ -1,0 +1,176 @@
+Build me a production-quality starter website for an artist portfolio using Astro.
+
+Goal:
+Create a beautiful, modern, slick, responsive website for showcasing paintings. It should feel elegant, visually spacious, image-led, and polished, suitable for fine art rather than a generic corporate portfolio.
+
+Tech constraints:
+- Use Astro
+- Use TypeScript
+- Use Tailwind CSS
+- Use static/site-generation approach only
+- No backend or database
+- No server-side services unless absolutely necessary
+- Structure the project so it can later be deployed easily to Cloudflare Pages
+- Keep the app simple to run locally with npm install / npm run dev / npm run build
+
+Design requirements:
+- The visual design must be refined, modern, minimal, and premium
+- Avoid “template-y”, startup, or SaaS aesthetics
+- Focus on art-first presentation
+- Use strong typography, generous spacing, subtle motion, elegant hover states, and clean composition
+- The site must look excellent on phone, tablet, laptop, and large desktop screens
+- The layout must adapt beautifully to different screen sizes, not just shrink mechanically
+- Use a responsive image-led layout throughout
+- Use light animations only where tasteful: fades, soft transitions, image reveal, hover effects
+- No loud gradients, no flashy gimmicks, no clutter
+
+Theme system:
+- Make themes very easy to change
+- Implement theming through a central design-token system using CSS custom properties
+- Put all core theme variables in one place, such as:
+  - background
+  - foreground/text
+  - muted text
+  - accent
+  - border
+  - card background
+  - overlay
+  - shadow
+- Create at least 3 built-in themes:
+  1. Light gallery
+  2. Dark museum
+  3. Warm editorial
+- The active theme should be easy to switch in code from one location
+- Also provide an optional small theme switcher in the UI, but keep it elegant and unobtrusive
+- Make sure theme changes affect the whole site coherently
+
+Content/data model:
+- Create the site around a collection of paintings
+- Each painting should be represented by structured content, ideally in Astro content collections
+- Each painting entry should include:
+  - title
+  - slug
+  - year
+  - medium
+  - dimensions
+  - series
+  - description
+  - featured flag
+  - order
+  - cover image
+  - optional gallery images
+- Create 8–12 realistic sample painting entries
+- Use placeholder text that sounds plausible for an artist portfolio, but keep it concise and tasteful
+
+Navigation and site structure:
+Build these pages/components:
+- Home page
+- Paintings index / gallery page
+- Individual painting page
+- About page
+- Optional contact page placeholder without backend form handling
+
+On the home page include:
+- a strong hero section
+- selected featured works
+- a short artist intro
+- a CTA into the gallery
+
+On the paintings index page:
+- show all works in a responsive grid or editorial gallery layout
+- allow sorting or filtering by series and/or year if it can be done simply on the client side
+- keep interactions lightweight
+
+On the individual painting page:
+- large hero image
+- metadata section
+- description
+- optional detail images
+- previous / next painting navigation
+- link back to all works
+
+Images:
+- Use sample images from Unsplash for now
+- Use different image aspect ratios and resolutions to simulate realistic artworks and detail shots
+- Make images responsive and appropriate for different screen sizes
+- Use srcset / sizes or Astro’s image features where appropriate
+- Ensure images render well on mobile, tablet, and large screens
+- Use object-fit/object-position thoughtfully so crops feel intentional
+- Prefer layouts that preserve artwork dignity rather than aggressive cropping
+- Include a mix of landscape, portrait, and square images
+- The site should gracefully handle mismatched image shapes
+
+Important:
+- Keep the implementation realistic: this is a starter portfolio, not an over-engineered app
+- Prioritise maintainability and clarity
+- Separate layout components cleanly
+- Make future editing easy for a developer
+- Do not add unnecessary dependencies
+
+Project structure:
+Please organise the project clearly, for example with:
+- src/layouts
+- src/components
+- src/content/paintings
+- src/styles
+- src/pages
+- src/lib or src/data if needed
+
+Accessibility:
+- Use semantic HTML
+- Good heading structure
+- Respect contrast
+- Make keyboard navigation reasonable
+- Include alt text for images
+- Do not make the UI dependent on hover only
+
+Performance:
+- Keep the site fast
+- Minimise client-side JavaScript
+- Only hydrate interactive components when needed
+- Use Astro idioms properly
+
+What I want from you:
+1. Generate the full Astro project structure
+2. Create all key files and sample content
+3. Create the theme token system
+4. Add responsive layout and styling
+5. Add sample Unsplash image URLs
+6. Explain how to run it locally
+7. Explain where to edit:
+   - theme values
+   - painting content
+   - homepage intro text
+   - navigation items
+8. Explain how to later deploy it to Cloudflare Pages
+9. Keep the code readable and production-minded
+
+Code style:
+- Use clean modern TypeScript
+- Keep comments minimal but helpful
+- Avoid code bloat
+- Prefer composable components
+- Make it feel like something a thoughtful frontend engineer designed
+
+Do not make this look like a SaaS landing page, startup dashboard, or generic creative agency template. 
+It should feel like a serious contemporary art portfolio: restrained, atmospheric, image-led, typographically confident, and calm.
+
+Implement theming through CSS custom properties and central design tokens. 
+Make sure each theme changes the full visual system coherently, including page background, text, muted text, cards, borders, overlays, accent, and shadows.
+
+The sample painting titles, series names, and descriptions should feel subtle, contemporary, and plausible for a serious painter portfolio. 
+Avoid fantasy-generator nonsense, overblown art jargon, or cliché placeholder text.
+
+Build the first version of this Astro artist portfolio with these priorities in order:
+
+1. Visual quality
+2. Responsive image layout
+3. Theme system
+4. Maintainable content model
+5. Clean project structure
+6. Minimal JavaScript
+
+The homepage should feel like a gallery landing page, not a product page.
+The gallery page should be elegant and image-led.
+The painting detail page should feel spacious and contemplative.
+The design should work beautifully on iPad in particular, not only on desktop and phone.

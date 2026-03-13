@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { unsplashSrc, unsplashSrcSet } from '../lib/images';
+
+interface Props {
+  painting: CollectionEntry<'paintings'>;
+}
+
+const { painting } = Astro.props;
+const { data } = painting;
+---
+
+<article class="painting-card">
+  <a href={`/paintings/${data.slug}/`} class="painting-card-link">
+    <div class="painting-card-image-wrap">
+      <img
+        class="painting-card-image"
+        src={unsplashSrc(data.coverImage, 900)}
+        srcset={unsplashSrcSet(data.coverImage)}
+        sizes="(min-width: 1200px) 28vw, (min-width: 768px) 42vw, 92vw"
+        alt={data.coverAlt}
+        loading="lazy"
+      />
+    </div>
+    <div class="painting-card-copy">
+      <h3>{data.title}</h3>
+      <p>{data.year} · {data.series}</p>
+    </div>
+  </a>
+</article>

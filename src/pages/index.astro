@@ -1,0 +1,36 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PaintingCard from '../components/PaintingCard.astro';
+import { siteConfig } from '../config/site';
+
+const paintings = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
+const featured = paintings.filter((painting) => painting.data.featured).slice(0, 4);
+---
+
+<BaseLayout title={`${siteConfig.artistName} | Contemporary Paintings`}>
+  <section class="hero container-shell">
+    <p class="hero-kicker">{siteConfig.artistName}</p>
+    <h1>Paintings that reward slow looking.</h1>
+    <p class="hero-text">{siteConfig.homeIntro}</p>
+    <a class="button-link" href="/paintings">View all paintings</a>
+  </section>
+
+  <section class="container-shell section-spacing" aria-labelledby="featured-title">
+    <div class="section-head">
+      <h2 id="featured-title">Featured works</h2>
+      <a href="/paintings" class="text-link">Browse full catalogue</a>
+    </div>
+    <div class="paintings-grid">
+      {featured.map((painting) => <PaintingCard painting={painting} />)}
+    </div>
+  </section>
+
+  <section class="container-shell section-spacing intro-block" aria-labelledby="intro-title">
+    <h2 id="intro-title">Studio notes</h2>
+    <p>
+      Current work explores shifts between built surfaces and open horizon, using oil, wax medium,
+      and dry pigment in thin passes. Each canvas is developed over months, with pauses built into the process.
+    </p>
+  </section>
+</BaseLayout>

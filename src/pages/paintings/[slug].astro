@@ -1,0 +1,85 @@
+---
+import { getCollection } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site';
+import { unsplashSrc, unsplashSrcSet } from '../../lib/images';
+
+export const getStaticPaths = (async () => {
+  const paintings = await getCollection('paintings');
+  return paintings.map((painting) => ({
+    params: { slug: painting.data.slug },
+    props: { painting }
+  }));
+}) satisfies GetStaticPaths;
+
+const { painting } = Astro.props;
+const works = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
+const currentIndex = works.findIndex((item) => item.data.slug === painting.data.slug);
+const prevWork = currentIndex > 0 ? works[currentIndex - 1] : null;
+const nextWork = currentIndex < works.length - 1 ? works[currentIndex + 1] : null;
+const { data } = painting;
+---
+
+<BaseLayout title={`${data.title} | ${siteConfig.artistName}`} description={data.description}>
+  <article class="container-shell painting-page">
+    <header class="painting-header">
+      <p class="eyebrow">{data.series}</p>
+      <h1>{data.title}</h1>
+      <p class="painting-meta">{data.year} · {data.medium} · {data.dimensions}</p>
+    </header>
+
+    <figure class="painting-hero">
+      <img
+        src={unsplashSrc(data.coverImage, 1600)}
+        srcset={unsplashSrcSet(data.coverImage, [720, 960, 1240, 1600, 2000])}
+        sizes="(min-width: 1400px) 72vw, (min-width: 768px) 88vw, 96vw"
+        alt={data.coverAlt}
+      />
+    </figure>
+
+    <section class="painting-copy-grid" aria-label="Painting details">
+      <dl>
+        <div>
+          <dt>Year</dt>
+          <dd>{data.year}</dd>
+        </div>
+        <div>
+          <dt>Medium</dt>
+          <dd>{data.medium}</dd>
+        </div>
+        <div>
+          <dt>Dimensions</dt>
+          <dd>{data.dimensions}</dd>
+        </div>
+        <div>
+          <dt>Series</dt>
+          <dd>{data.series}</dd>
+        </div>
+      </dl>
+      <p>{data.description}</p>
+    </section>
+
+    {data.galleryImages && data.galleryImages.length > 0 && (
+      <section class="detail-grid" aria-label="Detail images">
+        {data.galleryImages.map((image) => (
+          <img
+            src={unsplashSrc(image.src, 1000)}
+            srcset={unsplashSrcSet(image.src, [480, 720, 1000, 1400])}
+            sizes="(min-width: 1200px) 32vw, (min-width: 768px) 46vw, 100vw"
+            alt={image.alt}
+            loading="lazy"
+          />
+        ))}
+      </section>
+    )}
+
+    <nav class="painting-pagination" aria-label="Adjacent paintings">
+      <a class="text-link" href="/paintings">Back to all works</a>
+      <div>
+        {prevWork && <a class="text-link" href={`/paintings/${prevWork.data.slug}/`}>Previous</a>}
+        {nextWork && <a class="text-link" href={`/paintings/${nextWork.data.slug}/`}>Next</a>}
+      </div>
+    </nav>
+  </article>
+</BaseLayout>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site';
+---
+
+<BaseLayout title={`About | ${siteConfig.artistName}`}>
+  <section class="container-shell page-intro">
+    <p class="eyebrow">About</p>
+    <h1>{siteConfig.artistName}</h1>
+    <p class="max-copy">{siteConfig.aboutIntro}</p>
+  </section>
+
+  <section class="container-shell section-spacing prose-block">
+    <p>
+      Finch studied painting and printmaking before moving into a studio practice centered on large-format canvases.
+      Her recent exhibitions include group presentations in Bristol, Rotterdam, and Antwerp.
+    </p>
+    <p>
+      The work is built in sustained stages: underpainting, sanding back, and translucent overlays that soften edges
+      while preserving traces of earlier decisions. The result is a surface that shifts with light and viewing distance.
+    </p>
+    <p>
+      For exhibition inquiries and available works, please use the contact details on the contact page.
+    </p>
+  </section>
+</BaseLayout>

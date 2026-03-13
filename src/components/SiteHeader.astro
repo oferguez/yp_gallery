@@ -1,0 +1,33 @@
+---
+import { siteConfig } from '../config/site';
+import ThemeSwitcher from './ThemeSwitcher.astro';
+
+const pathname = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="container-shell header-inner">
+    <a class="brand" href="/">
+      <span class="brand-name">{siteConfig.artistName}</span>
+      <span class="brand-tag">Painter</span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-list">
+        {siteConfig.navItems.map((item) => {
+          const active =
+            item.href === '/'
+              ? pathname === '/'
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          return (
+            <li>
+              <a class="nav-link" data-active={active} href={item.href}>
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+    <ThemeSwitcher />
+  </div>
+</header>
