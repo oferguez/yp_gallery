@@ -79,7 +79,7 @@ export const siteConfig = {
   defaultTheme: 'warm-editorial' as ThemeName,
   navItems: [
     { label: 'Home', href: '/' },
-    { label: 'Studio Browse', href: '/browse' },
+    { label: 'Studio Map', href: '/browse' },
     { label: 'All Paintings', href: '/paintings' },
     { label: 'About', href: '/about' },
     { label: 'Contact', href: '/contact' }
