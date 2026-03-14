@@ -485,14 +485,14 @@
 
   .room-graph {
     position: relative;
-    min-height: 680px;
+    height: clamp(500px, 72vh, 920px);
+    overflow: auto;
     border: 1px solid var(--border);
     background:
       radial-gradient(circle at 15% 30%, color-mix(in oklab, var(--accent) 18%, transparent), transparent 34%),
       radial-gradient(circle at 84% 72%, color-mix(in oklab, var(--accent) 10%, transparent), transparent 30%),
       var(--card);
     box-shadow: var(--shadow);
-    overflow: auto;
     isolation: isolate;
   }
 
@@ -514,16 +514,13 @@
 
   .room-node {
     position: absolute;
-    width: min(280px, 28vw);
-    min-width: 220px;
-    transform: translate(-50%, -50%);
     border: 1px solid color-mix(in oklab, var(--border) 80%, var(--fg));
     box-shadow: var(--shadow);
     text-decoration: none;
     color: var(--fg);
     overflow: hidden;
     isolation: isolate;
-    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    transition: box-shadow 220ms ease, border-color 220ms ease;
   }
 
   .room-node-bg {
@@ -572,7 +569,6 @@
 
   .room-node:hover,
   .room-node:focus-visible {
-    transform: translate(-50%, -52%);
     border-color: var(--accent);
   }
 
@@ -746,16 +742,6 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  .room-graph {
-    min-width: 520px;
-    min-height: 460px;
-  }
-
-  .room-node {
-    width: 110px;
-    min-width: 90px;
-  }
-
   .room-node p {
     display: none;
   }
@@ -767,9 +753,5 @@
   .room-node h2 {
     font-size: 0.8rem;
     font-weight: 600;
-  }
-
-  .room-node-bg {
-    opacity: 0.7;
   }
 }
