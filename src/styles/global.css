@@ -479,6 +479,10 @@
     max-width: 62ch;
   }
 
+  .room-graph-scroll {
+    /* on desktop, no-op; on mobile this wrapper enables scroll */
+  }
+
   .room-graph {
     position: relative;
     min-height: 680px;
@@ -737,27 +741,35 @@
 }
 
 @media (max-width: 900px) {
-  .room-graph {
-    min-height: unset;
-    display: grid;
-    gap: 0.9rem;
-    padding: 0.9rem;
+  .room-graph-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .room-lines {
-    display: none;
+  .room-graph {
+    min-width: 520px;
+    min-height: 460px;
   }
 
   .room-node {
-    position: relative;
-    width: 100%;
-    transform: none;
-    left: auto !important;
-    top: auto !important;
+    width: 110px;
+    min-width: 90px;
   }
 
-  .room-node:hover,
-  .room-node:focus-visible {
-    transform: translateY(-2px);
+  .room-node p {
+    display: none;
+  }
+
+  .room-node-copy {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .room-node h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .room-node-bg {
+    opacity: 0.7;
   }
 }

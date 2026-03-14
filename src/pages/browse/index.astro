@@ -75,6 +75,7 @@ const edges = [...edgeSet].map((edge) => {
   </section>
 
   <section class="container-shell section-spacing" aria-label="Room connectivity map">
+    <div class="room-graph-scroll">
     <div class="room-graph">
       <svg class="room-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         {edges.map((edge) => (
@@ -105,6 +106,7 @@ const edges = [...edgeSet].map((edge) => {
           </div>
         </a>
       ))}
+    </div>
     </div>
   </section>
 </BaseLayout>
