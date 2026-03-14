@@ -7,38 +7,16 @@ import { withBase } from '../../lib/urls';
 
 const paintings = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
 
-const rawPoints: Record<string, { x: number; y: number }> = {
-  foyer: { x: 3, y: 10 },
-  'north-light': { x: 63, y: 10 },
-  'paper-archive': { x: 3, y: 44 },
-  'mineral-room': { x: 40, y: 44 },
-  'river-gallery': { x: 80, y: 44 },
-  'ember-wing': { x: 58, y: 78 }
+// Grid positions: x = column, y = row (top-left corner of each card)
+// dx/dy = optional fine-tune nudge in card-size units (e.g. dx: 0.5 shifts right by half a card)
+const gridPoints: Record<string, { x: number; y: number; dx?: number; dy?: number }> = {
+  foyer:           { x: 0, y: 0 },
+  'north-light':   { x: 2, y: 0 },
+  'paper-archive': { x: 0, y: 1 },
+  'mineral-room':  { x: 1.333, y: 1 },
+  'river-gallery': { x: 2.666, y: 1 },
+  'ember-wing':    { x: 2, y: 2 }
 };
-
-const xValues = Object.values(rawPoints).map((point) => point.x);
-const yValues = Object.values(rawPoints).map((point) => point.y);
-
-const minX = Math.min(...xValues);
-const maxX = Math.max(...xValues);
-const minY = Math.min(...yValues);
-const maxY = Math.max(...yValues);
-
-const normalize = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) => {
-  if (fromMax === fromMin) return (toMin + toMax) / 2;
-  const ratio = (value - fromMin) / (fromMax - fromMin);
-  return toMin + ratio * (toMax - toMin);
-};
-
-const mapPoints = Object.fromEntries(
-  Object.entries(rawPoints).map(([id, point]) => [
-    id,
-    {
-      x: normalize(point.x, minX, maxX, 1, 90),
-      y: normalize(point.y, minY, maxY, 10, 90)
-    }
-  ])
-) as Record<string, { x: number; y: number }>;
 
 const roomCards = rooms.map((room) => {
   const firstPainting = paintings.find((painting) => painting.data.room === room.id);
@@ -57,13 +35,8 @@ for (const room of rooms) {
 }
 
 const edges = [...edgeSet].map((edge) => {
-  const [a, b] = edge.split('::');
-  return {
-    fromId: a,
-    toId: b,
-    from: mapPoints[a],
-    to: mapPoints[b]
-  };
+  const [fromId, toId] = edge.split('::');
+  return { fromId, toId };
 });
 ---
 
@@ -80,10 +53,7 @@ const edges = [...edgeSet].map((edge) => {
       <svg class="room-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         {edges.map((edge) => (
           <line
-            x1={edge.from.x}
-            y1={edge.from.y}
-            x2={edge.to.x}
-            y2={edge.to.y}
+            x1="0" y1="0" x2="0" y2="0"
             data-from={edge.fromId}
             data-to={edge.toId}
           ></line>
@@ -95,9 +65,10 @@ const edges = [...edgeSet].map((edge) => {
           class="room-node"
           href={withBase(`/browse/${room.id}/`)}
           data-room-id={room.id}
-          data-raw-x={rawPoints[room.id].x}
-          data-raw-y={rawPoints[room.id].y}
-          style={`left:${mapPoints[room.id].x}%; top:${mapPoints[room.id].y}%;`}
+          data-grid-x={gridPoints[room.id].x}
+          data-grid-y={gridPoints[room.id].y}
+          data-nudge-x={gridPoints[room.id].dx ?? 0}
+          data-nudge-y={gridPoints[room.id].dy ?? 0}
         >
           {coverImage && <img class="room-node-bg" src={coverImage} alt="" aria-hidden="true" loading="lazy" />}
           <div class="room-node-copy">
@@ -112,83 +83,71 @@ const edges = [...edgeSet].map((edge) => {
 </BaseLayout>
 
 <script>
-  type FitMode = 'compact' | 'balanced' | 'spacious';
-  type Point = { x: number; y: number };
+  type Point = { x: number; y: number; dx: number; dy: number };
 
-  const points = new Map<string, Point>();
+  const graph = document.querySelector<HTMLElement>('.room-graph');
   const nodes = document.querySelectorAll<HTMLAnchorElement>('.room-node[data-room-id]');
   const lines = document.querySelectorAll<SVGLineElement>('.room-lines line');
 
+  const points = new Map<string, Point>();
   nodes.forEach((node) => {
     const roomId = node.dataset.roomId;
-    const rawX = Number(node.dataset.rawX);
-    const rawY = Number(node.dataset.rawY);
-    if (!roomId || Number.isNaN(rawX) || Number.isNaN(rawY)) return;
-    points.set(roomId, { x: rawX, y: rawY });
+    const x = Number(node.dataset.gridX);
+    const y = Number(node.dataset.gridY);
+    const dx = Number(node.dataset.nudgeX);
+    const dy = Number(node.dataset.nudgeY);
+    if (!roomId || Number.isNaN(x) || Number.isNaN(y)) return;
+    points.set(roomId, { x, y, dx, dy });
   });
 
-  const xValues = [...points.values()].map((point) => point.x);
-  const yValues = [...points.values()].map((point) => point.y);
-  const minX = Math.min(...xValues);
-  const maxX = Math.max(...xValues);
-  const minY = Math.min(...yValues);
-  const maxY = Math.max(...yValues);
+  const maxX = Math.max(...[...points.values()].map((p) => p.x));
+  const maxY = Math.max(...[...points.values()].map((p) => p.y));
 
-  const normalize = (value: number, fromMin: number, fromMax: number, toMin: number, toMax: number) => {
-    if (fromMax === fromMin) return (toMin + toMax) / 2;
-    const ratio = (value - fromMin) / (fromMax - fromMin);
-    return toMin + ratio * (toMax - toMin);
-  };
-
-  const ranges: Record<FitMode, { xMin: number; xMax: number; yMin: number; yMax: number }> = {
-    compact: { xMin: 12, xMax: 60, yMin: 20, yMax: 90 },
-    balanced: { xMin: 22, xMax: 78, yMin: 16, yMax: 82 },
-    spacious: { xMin: 16, xMax: 84, yMin: 12, yMax: 86 }
-  };
-
-  const resolveAuto = (): FitMode => {
-    if (window.innerWidth >= 1500) return 'spacious';
-    if (window.innerWidth <= 1100) return 'compact';
-    return 'balanced';
-  };
+  const scroll = graph?.parentElement;
 
   const place = () => {
-    const range = ranges[resolveAuto()];
-    console.log('range:', resolveAuto(), { range })
-    const positioned = new Map<string, Point>();
+    if (!graph || !scroll) return;
 
-    points.forEach((raw, id) => {
-      const x = normalize(raw.x, minX, maxX, range.xMin, range.xMax);
-      const y = normalize(raw.y, minY, maxY, range.yMin, range.yMax);
-      positioned.set(id, { x, y });
-    });
+    const isWide = scroll.offsetWidth > 800;
+    const cardSize = scroll.offsetWidth / 5;
+    const cardHeight = isWide ? graph.offsetHeight / 5 : cardSize;
+    const rowSpan = cardHeight * 1.5;
+    const inset = cardSize * 0.1;
+    const canvasW = 2 * inset + (maxX + 1) * cardSize;
+    const canvasH = 2 * inset + maxY * rowSpan + cardHeight;
+
+    if (!isWide) graph.style.height = `${canvasH}px`;
+    graph.style.minWidth = `${canvasW}px`;
+
+    // pixel position of a card's top-left corner
+    const px = (p: Point) => inset + p.x * cardSize + p.dx * cardSize;
+    const py = (p: Point) => inset + p.y * rowSpan + p.dy * cardHeight;
 
     nodes.forEach((node) => {
-      const roomId = node.dataset.roomId;
-      if (!roomId) return;
-      const point = positioned.get(roomId);
+      const point = points.get(node.dataset.roomId!);
       if (!point) return;
-      node.style.left = `${point.x}%`;
-      node.style.top = `${point.y}%`;
+      node.style.left = `${px(point)}px`;
+      node.style.top = `${py(point)}px`;
+      node.style.width = `${cardSize}px`;
+      node.style.height = `${cardHeight}px`;
     });
 
+    const graphW = graph.offsetWidth;
+
     lines.forEach((line) => {
-      const from = line.dataset.from;
-      const to = line.dataset.to;
+      const from = points.get(line.dataset.from!);
+      const to = points.get(line.dataset.to!);
       if (!from || !to) return;
-      const fromPoint = positioned.get(from);
-      const toPoint = positioned.get(to);
-      if (!fromPoint || !toPoint) return;
-      line.setAttribute('x1', String(fromPoint.x));
-      line.setAttribute('y1', String(fromPoint.y));
-      line.setAttribute('x2', String(toPoint.x));
-      line.setAttribute('y2', String(toPoint.y));
+      // center of each card as % of graph dimensions
+      const cx = (p: Point) => ((px(p) + cardSize / 2) / graphW) * 100;
+      const cy = (p: Point) => ((py(p) + cardHeight / 2) / canvasH) * 100;
+      line.setAttribute('x1', String(cx(from)));
+      line.setAttribute('y1', String(cy(from)));
+      line.setAttribute('x2', String(cx(to)));
+      line.setAttribute('y2', String(cy(to)));
     });
   };
 
-  window.addEventListener('resize', () => {
-    place();
-  });
-
+  window.addEventListener('resize', place);
   place();
 </script>
