@@ -8,11 +8,11 @@ import { withBase } from '../../lib/urls';
 const paintings = (await getCollection('paintings')).sort((a, b) => a.data.order - b.data.order);
 
 const rawPoints: Record<string, { x: number; y: number }> = {
-  foyer: { x: 18, y: 18 },
-  'north-light': { x: 48, y: 10 },
-  'paper-archive': { x: 10, y: 58 },
-  'mineral-room': { x: 46, y: 48 },
-  'river-gallery': { x: 72, y: 44 },
+  foyer: { x: 3, y: 10 },
+  'north-light': { x: 63, y: 10 },
+  'paper-archive': { x: 3, y: 44 },
+  'mineral-room': { x: 40, y: 44 },
+  'river-gallery': { x: 80, y: 44 },
   'ember-wing': { x: 58, y: 78 }
 };
 
@@ -34,8 +34,8 @@ const mapPoints = Object.fromEntries(
   Object.entries(rawPoints).map(([id, point]) => [
     id,
     {
-      x: normalize(point.x, minX, maxX, 22, 78),
-      y: normalize(point.y, minY, maxY, 16, 82)
+      x: normalize(point.x, minX, maxX, 1, 90),
+      y: normalize(point.y, minY, maxY, 10, 90)
     }
   ])
 ) as Record<string, { x: number; y: number }>;
@@ -141,7 +141,7 @@ const edges = [...edgeSet].map((edge) => {
   };
 
   const ranges: Record<FitMode, { xMin: number; xMax: number; yMin: number; yMax: number }> = {
-    compact: { xMin: 26, xMax: 74, yMin: 20, yMax: 80 },
+    compact: { xMin: 12, xMax: 60, yMin: 20, yMax: 90 },
     balanced: { xMin: 22, xMax: 78, yMin: 16, yMax: 82 },
     spacious: { xMin: 16, xMax: 84, yMin: 12, yMax: 86 }
   };
@@ -154,6 +154,7 @@ const edges = [...edgeSet].map((edge) => {
 
   const place = () => {
     const range = ranges[resolveAuto()];
+    console.log('range:', resolveAuto(), { range })
     const positioned = new Map<string, Point>();
 
     points.forEach((raw, id) => {
